@@ -1,6 +1,6 @@
 # from rl_utils.env_wrapper.atari_wrapper import make_atari, wrap_deepmind
 from rl_utils.logger import logger, bench
-from blob_env import BlobEnv
+from rl_utils.env_wrapper.blob_env import BlobEnv
 import os
 # import gym
 

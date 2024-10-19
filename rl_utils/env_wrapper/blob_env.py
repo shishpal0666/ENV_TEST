@@ -2,6 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import torch
 from rl_utils.logger import logger
+import gym
+from gym import spaces
 
 class Blob:
     def __init__(self, size, x, y, t):
@@ -65,6 +67,15 @@ class BlobEnv:
     FOOD_N = 2
     ENEMY_N = 3
     d = {1: (255, 175, 0), 2: (0, 255, 0), 3: (0, 0, 255)}
+    
+    def __init__(self):
+        # Define action and observation space
+        self.action_space = spaces.Discrete(self.ACTION_SPACE_SIZE)
+        self.observation_space = spaces.Box(low=0, high=1, shape=self.OBSERVATION_SPACE_VALUES, dtype=np.float32)
+        self.reward_range = (-self.ENEMY_PENALTY - self.MOVE_PENALTY, self.FOOD_REWARD)
+        self.metadata = {'render.modes': ['human', 'rgb_array']}  # Add metadata
+
+
 
     def reset(self):
         self.player = Blob(self.SIZE, x=1, y=1, t=1)

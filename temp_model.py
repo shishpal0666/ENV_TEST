@@ -10,7 +10,7 @@ NUM_ACTIONS = 9
 class deepmind(nn.Module):
     def __init__(self):
         super(deepmind, self).__init__()
-        self.conv1 = nn.Conv2d(3, 32, 3, stride=1, padding=1)  # Changed input channels to 3
+        self.conv1 = nn.Conv2d(1, 32, 3, stride=1, padding=1)
         self.conv2 = nn.Conv2d(32, 64, 3, stride=1, padding=1)
         self.conv3 = nn.Conv2d(64, 64, 3, stride=1, padding=1)
         
@@ -31,7 +31,7 @@ class deepmind(nn.Module):
         return x.view(-1, 64 * MAZE_SIZE * MAZE_SIZE)
 
 class net(nn.Module):
-    def __init__(self, num_actions, use_dueling=False):
+    def __init__(self,num_actions, use_dueling=False):
         super(net, self).__init__()
         self.use_dueling = use_dueling
         self.cnn_layer = deepmind()
@@ -46,22 +46,7 @@ class net(nn.Module):
             self.state_value = nn.Linear(256, 1)
 
     def forward(self, inputs):
-        # Check input shape and reshape if necessary
-        if inputs.dim() == 5:  # If input is [batch, 1, 10, 3, 10]
-            x = inputs.squeeze(1)  # Remove the second dimension
-            x = x.permute(0, 2, 1, 3)  # Permute to [batch, 3, 10, 10]
-        elif inputs.dim() == 4:  # If input is [batch, 10, 3, 10]
-            x = inputs.permute(0, 2, 1, 3)  # Permute to [batch, 3, 10, 10]
-        elif inputs.dim() == 3:  # If input is [10, 3, 10]
-            x = inputs.unsqueeze(0)  # Add batch dimension
-            x = x.permute(0, 2, 1, 3)  # Permute to [1, 3, 10, 10]
-        else:
-            raise ValueError(f"Unexpected input shape: {inputs.shape}")
-
-        x = x.float() / 255.0  # Normalize assuming 8-bit color values
-
-        x = self.cnn_layer(x)
-        
+        x = self.cnn_layer(inputs.unsqueeze(1).float() / 3.0)  # Normalize input
         if not self.use_dueling:
             x = F.relu(self.fc1(x))
             action_value_out = self.action_value(x)
