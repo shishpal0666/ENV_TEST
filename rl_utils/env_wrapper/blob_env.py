@@ -5,6 +5,9 @@ from rl_utils.logger import logger
 import gym
 from gym import spaces
 
+
+path_taken=[(1,1)]
+
 class Blob:
     def __init__(self, size, x, y, t):
         self.size = size
@@ -55,7 +58,7 @@ class Blob:
             self.y = self.size - 1
 
 
-class BlobEnv:
+class BlobEnv():
     SIZE = 10
     RETURN_IMAGES = True
     MOVE_PENALTY = 0.05
@@ -68,7 +71,8 @@ class BlobEnv:
     ENEMY_N = 3
     d = {1: (255, 175, 0), 2: (0, 255, 0), 3: (0, 0, 255)}
     
-    def __init__(self):
+    def __init__(self,args):
+        self.args=args
         # Define action and observation space
         self.action_space = spaces.Discrete(self.ACTION_SPACE_SIZE)
         self.observation_space = spaces.Box(low=0, high=1, shape=self.OBSERVATION_SPACE_VALUES, dtype=np.float32)
@@ -78,6 +82,7 @@ class BlobEnv:
 
 
     def reset(self):
+        path_taken=[(1,1)]
         self.player = Blob(self.SIZE, x=1, y=1, t=1)
         self.food = Blob(self.SIZE, x=7, y=8, t=2)
         self.enemies = [Blob(self.SIZE, x, y, t=3) for x, y in self.generate_enemy_positions()]
@@ -93,16 +98,43 @@ class BlobEnv:
         return observation
 
     def generate_enemy_positions(self):
-        return [
-            (0, 0), (0, 1), (1, 0), (0, 4), (0, 5), 
-            (1, 4), (1, 5), (0, 8), (0, 9), (1, 9), 
-            (1, 8), (2, 7), (3, 3), (4, 0), (5, 0), 
-            (4, 1), (5, 1), (4, 4), (5, 4), (4, 5), 
-            (5, 5), (4, 8), (4, 9), (5, 8), (5, 9), 
-            (6, 6), (7, 2), (8, 0), (8, 1), (9, 0), 
-            (9, 1), (8, 4), (8, 5), (9, 5), (9, 4), 
-            (8, 8), (8, 9), (9, 9), (9, 8)
-        ]
+        if self.args.medium_env:
+            return [
+                (0, 0), (0, 1), (1, 0), (0, 4), (0, 5), 
+                (1, 4), (1, 5), (0, 8), (0, 9), (1, 9), 
+                (1, 8), (2, 7), (3, 3), (4, 0), (5, 0), 
+                (4, 1), (5, 1), (4, 4), (5, 4), (4, 5), 
+                (5, 5), (4, 8), (4, 9), (5, 8), (5, 9), 
+                (6, 6), (7, 2), (8, 0), (8, 1), (9, 0), 
+                (9, 1), (8, 4), (8, 5), (9, 5), (9, 4), 
+                (8, 8), (8, 9), (9, 9), (9, 8)
+            ]
+        elif self.args.hard_env:
+            return [
+                (0, 0), (0, 1), (0, 2), (0, 3), (0, 7),
+                (0, 8), (0, 9), (1, 0), (1, 2), (1, 4),
+                (1, 5), (1, 6), (1, 8), (1, 9), (2, 0),
+                (2, 1), (2, 3), (2, 5), (2, 6), (2, 7),
+                (2, 9), (3, 0), (3, 2), (3, 3), (3, 4),
+                (3, 6), (3, 8), (3, 9), (4, 0), (4, 1),
+                (4, 3), (4, 4), (4, 5), (4, 7), (4, 8),
+                (4, 9), (5, 0), (5, 1), (5, 2), (5, 4),
+                (5, 5), (5, 6), (5, 8), (5, 9), (6, 0),
+                (6, 1), (6, 2), (6, 3), (6, 5), (6, 6),
+                (6, 7), (6, 9), (7, 0), (7, 1), (7, 2),
+                (7, 3), (7, 4), (7, 6), (7, 7), (8, 0),
+                (8, 1), (8, 2), (8, 4), (8, 6), (8, 7),
+                (8, 8), (8, 9), (9, 0), (9, 1), (9, 2),
+                (9, 3), (9, 5), (9, 6), (9, 7), (9, 8),
+                (9, 9),
+            ]
+        else:
+            return [
+                (1, 6), (2, 6), (2, 7), (3, 1),
+                (3, 2), (4, 1), (6, 5), (7, 5),
+                (7, 4), (7, 6)
+            ]
+
 
     def step(self, action):
         self.episode_step += 1
@@ -136,6 +168,9 @@ class BlobEnv:
             }
         else:
             info = {}
+        
+        a=(self.player.x,self.player.y)
+        path_taken.append(a)
 
         return new_observation, reward, done, info
 
@@ -156,3 +191,8 @@ class BlobEnv:
         
         img_tensor = torch.from_numpy(env).float().permute(2, 0, 1) / 255.0
         return img_tensor
+
+
+
+def get_path_traveled():
+    return path_taken

@@ -38,6 +38,9 @@ class reward_recorder:
         # append new one
         self.buffer.append(0.0)
         self._episode_length += 1
+        
+    def get_last_reward(self):
+        return self.buffer[-1]
 
     # get length of buffer
     @property

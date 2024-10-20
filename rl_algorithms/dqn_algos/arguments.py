@@ -23,6 +23,8 @@ def get_args():
     parse.add_argument('--log-dir', type=str, default='logs', help='dir to save log information')
     parse.add_argument('--use-double-net', action='store_true', help='use double dqn to train the agent')
     parse.add_argument('--use-dueling', action='store_true', help='use dueling to train the agent')
+    parse.add_argument('--hard-env', action='store_true', help='use hard env to train the agent')
+    parse.add_argument('--medium-env', action='store_true', help='use medium env to train the agent')
 
     args = parse.parse_args()
 

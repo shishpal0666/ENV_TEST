@@ -3,8 +3,11 @@ import numpy as np
 from models import net
 from utils import linear_schedule, select_actions, reward_recorder
 from rl_utils.experience_replay.experience_replay import replay_buffer
+from results import setup_csv
+from paths import check_min_path
 import torch
 from datetime import datetime
+import time
 import os
 import copy
 
@@ -41,10 +44,45 @@ class dqn_agent:
 
     # start to do the training
     def learn(self):
+        if self.args.use_dueling:
+            if self.args.medium_env:
+                filename="duelingDQN_medium_res.csv"
+                pathfilename="duelingDQN_medium_path.txt"  
+            elif self.args.hard_env:
+                filename="duelingDQN_hard_res.csv"
+                pathfilename="duelingDQN_hard_path.txt" 
+            else:
+                filename="duelingDQN_eazy_res.csv"
+                pathfilename="duelingDQN_eazy_path.txt" 
+                        
+        elif self.args.use_double_net:
+            if self.args.medium_env:
+                filename="DDQN_medium_res.csv"
+                pathfilename="DDQN_medium_path.txt"  
+            elif self.args.hard_env:
+                filename="DDQN_hard_res.csv"
+                pathfilename="DDQN_hard_path.txt" 
+            else:
+                filename="DDQN_eazy_res.csv"
+                pathfilename="DDQN_eazy_path.txt"
+        else:
+            if self.args.medium_env:
+                filename="DQN_medium_res.csv"
+                pathfilename="DQN_medium_path.txt"  
+            elif self.args.hard_env:
+                filename="DQN_hard_res.csv"
+                pathfilename="DQN_hard_path.txt" 
+            else:
+                filename="DQN_eazy_res.csv"
+                pathfilename="DQN_eazy_path.txt"
+                
+        file, writer = setup_csv(filename)
         # the episode reward
         episode_reward = reward_recorder()
         obs = np.array(self.env.reset())
         td_loss = 0
+        steps=0
+        ep_start_time = time.time()
         for timestep in range(self.args.total_timesteps):
             explore_eps = self.exploration_schedule.get_value(timestep)
             with torch.no_grad():
@@ -61,6 +99,12 @@ class dqn_agent:
             # add the rewards
             episode_reward.add_rewards(reward)
             if done:
+                ep_duration = round(time.time() - ep_start_time, 2)
+                writer.writerow([episode_reward.num_episodes,episode_reward.get_last_reward(),steps,ep_duration])
+                file.flush()
+                check_min_path(steps)
+                steps=0
+                ep_start_time = time.time()
                 obs = np.array(self.env.reset())
                 # start new episode to store rewards
                 episode_reward.start_new_episode()
@@ -75,6 +119,8 @@ class dqn_agent:
                 print('[{}] Frames: {}, Episode: {}, Mean: {:.3f}, Loss: {:.3f}'.format(datetime.now(), timestep, episode_reward.num_episodes, \
                         episode_reward.mean, td_loss))
                 torch.save(self.net.state_dict(), self.model_path + '/model.pt')
+            steps+=1
+                
 
     # update the network
     def _update_network(self, samples):

@@ -17,7 +17,7 @@ def create_single_env(args, rank=0):
         log_path = args.log_dir + '/{}/'.format(args.env_name)
         logger.configure(log_path)
     
-    env = BlobEnv()
+    env = BlobEnv(args)
     env = bench.Monitor(env, logger.get_dir())
     
     # # start to create environment
