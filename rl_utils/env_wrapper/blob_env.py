@@ -82,6 +82,7 @@ class BlobEnv():
 
 
     def reset(self):
+        global path_taken
         path_taken=[(1,1)]
         self.player = Blob(self.SIZE, x=1, y=1, t=1)
         self.food = Blob(self.SIZE, x=7, y=8, t=2)
@@ -137,6 +138,7 @@ class BlobEnv():
 
 
     def step(self, action):
+        global path_taken
         self.episode_step += 1
         x_t, y_t = self.player.x, self.player.y
         self.player.action(action)
@@ -195,4 +197,5 @@ class BlobEnv():
 
 
 def get_path_traveled():
+    global path_taken
     return path_taken

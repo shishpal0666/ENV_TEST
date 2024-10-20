@@ -4,7 +4,7 @@ from models import net
 from utils import linear_schedule, select_actions, reward_recorder
 from rl_utils.experience_replay.experience_replay import replay_buffer
 from results import setup_csv
-from paths import check_min_path
+from paths import path_saver
 import torch
 from datetime import datetime
 import time
@@ -81,8 +81,9 @@ class dqn_agent:
         episode_reward = reward_recorder()
         obs = np.array(self.env.reset())
         td_loss = 0
-        steps=0
+        steps=1
         ep_start_time = time.time()
+        pathsaver=path_saver()
         for timestep in range(self.args.total_timesteps):
             explore_eps = self.exploration_schedule.get_value(timestep)
             with torch.no_grad():
@@ -102,8 +103,8 @@ class dqn_agent:
                 ep_duration = round(time.time() - ep_start_time, 2)
                 writer.writerow([episode_reward.num_episodes,episode_reward.get_last_reward(),steps,ep_duration])
                 file.flush()
-                check_min_path(steps)
-                steps=0
+                pathsaver.check_min_path(steps,episode_reward.num_episodes,pathfilename)
+                steps=1
                 ep_start_time = time.time()
                 obs = np.array(self.env.reset())
                 # start new episode to store rewards
