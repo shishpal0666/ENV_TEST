@@ -10,7 +10,7 @@ from datetime import datetime
 import time
 import os
 import copy
-
+epsilon_decay=0.995
 # define the dqn agent
 class dqn_agent:
     def __init__(self, env, args):
@@ -84,8 +84,9 @@ class dqn_agent:
         steps=1
         ep_start_time = time.time()
         pathsaver=path_saver()
+        explore_eps=self.args.init_ratio
         for timestep in range(self.args.total_timesteps):
-            explore_eps = self.exploration_schedule.get_value(timestep)
+            #explore_eps = self.exploration_schedule.get_value(timestep)
             with torch.no_grad():
                 obs_tensor = self._get_tensors(obs)
                 action_value = self.net(obs_tensor)
@@ -108,6 +109,7 @@ class dqn_agent:
                 ep_start_time = time.time()
                 obs = np.array(self.env.reset())
                 # start new episode to store rewards
+                explore_eps=max(explore_eps*epsilon_decay,0.01)
                 episode_reward.start_new_episode()
             if timestep > self.args.learning_starts and timestep % self.args.train_freq == 0:
                 # start to sample the samples from the replay buffer

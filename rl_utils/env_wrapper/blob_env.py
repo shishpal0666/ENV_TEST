@@ -4,7 +4,9 @@ import torch
 from rl_utils.logger import logger
 import gym
 from gym import spaces
-
+import cv2
+import os
+from PIL import Image
 
 path_taken=[(1,1)]
 
@@ -183,16 +185,19 @@ class BlobEnv():
         plt.show()
 
     def get_image(self):
-        env = np.zeros((self.SIZE, self.SIZE, 3), dtype=np.uint8)
-        env[self.food.x][self.food.y] = self.d[self.FOOD_N]
-        
-        for enemy in self.enemies:
-            env[enemy.x][enemy.y] = self.d[self.ENEMY_N]
+        env = np.zeros((self.SIZE, self.SIZE, 3), dtype=np.uint8)  # starts an rbg of our size
+        env[self.food.x][self.food.y] = self.d[self.FOOD_N]  # sets the food location tile to green color
 
-        env[self.player.x][self.player.y] = self.d[self.PLAYER_N]
-        
-        img_tensor = torch.from_numpy(env).float().permute(2, 0, 1) / 255.0
-        return img_tensor
+        #For Single Enemy in Dynamic Env
+        # env[self.enemy.x][self.enemy.y] = self.d[self.ENEMY_N]  # sets the enemy location to red
+
+        #For Multiple Enemy in Static Env
+        for enemy in self.enemies:
+            env[enemy.x][enemy.y] = self.d[self.ENEMY_N]  # sets the enemy location to red
+
+        env[self.player.x][self.player.y] = self.d[self.PLAYER_N]  # sets the player tile to blue
+        img = Image.fromarray(env, 'RGB')  # reading to rgb. Apparently. Even tho color definitions are bgr. ???
+        return img
 
 
 

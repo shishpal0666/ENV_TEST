@@ -13,7 +13,7 @@ def get_args():
     parse.add_argument('--exploration_fraction', type=float, default=0.1, help='decide how many steps to do the exploration')
     parse.add_argument('--final-ratio', type=float, default=0.01, help='the final exploration ratio')
     parse.add_argument('--grad-norm-clipping', type=float, default=10, help='the gradient clipping')
-    parse.add_argument('--total-timesteps', type=int, default=int(1000), help='the total timesteps to train network')
+    parse.add_argument('--total-timesteps', type=int, default=int(200000), help='the total timesteps to train network')
     parse.add_argument('--learning-starts', type=int, default=1000, help='the frames start to learn')
     parse.add_argument('--train-freq', type=int, default=4, help='the frequency to update the network')
     parse.add_argument('--target-network-update-freq', type=int, default=1000, help='the frequency to update the target network')
