@@ -177,6 +177,9 @@ class BlobEnv():
         self.episode_step += 1
         x_t, y_t = self.player.x, self.player.y
         self.player.action(action)
+        dist1=math.dist([x_t,y_t], [7,8])
+        dist2=math.dist([self.player.x,self.player.y],[7,8])
+        d_reward=(dist2)/(10.63)
 
         if self.RETURN_IMAGES:
             new_observation = self.get_image()
@@ -184,20 +187,16 @@ class BlobEnv():
             new_observation = (self.player - self.food) + (self.player - self.enemies[0])
 
 
-        if self.args.updated_reward:
-            dist1=math.dist([x_t,y_t], [7,8])
-            dist2=math.dist([self.player.x,self.player.y],[7,8])
-            d_reward=(dist2)/(10.63)
-            
-            if self.player == self.food:
-                reward = self.FOOD_REWARD
-            elif self.player in self.enemies:
-                reward = -self.ENEMY_PENALTY - self.MOVE_PENALTY
-                self.player.x, self.player.y = x_t, y_t
-            else:
-                reward = -self.MOVE_PENALTY
+        if self.player == self.food:
+            reward = self.FOOD_REWARD
+        elif self.player in self.enemies:
+            reward = -self.ENEMY_PENALTY - self.MOVE_PENALTY
+            self.player.x, self.player.y = x_t, y_t
+        else:
+            reward = -self.MOVE_PENALTY    
+            if self.args.updated_reward:
                 angle,moved=self.calculate_angle((x_t,y_t),(self.player.x,self.player.y))
-                
+            
                 if moved:
                     o_reward=abs((90-angle)/90)
                     if angle>90:
@@ -213,14 +212,6 @@ class BlobEnv():
                 elif dist1<dist2:
                     d_reward=d_reward*(-0.2)
                     reward+=d_reward  
-        else:        
-            if self.player == self.food:
-                reward = self.FOOD_REWARD
-            elif self.player in self.enemies:
-                reward = -self.ENEMY_PENALTY - self.MOVE_PENALTY
-                self.player.x, self.player.y = x_t, y_t
-            else:
-                reward = -self.MOVE_PENALTY      
 
             
 
