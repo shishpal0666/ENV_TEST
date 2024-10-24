@@ -41,41 +41,78 @@ class dqn_agent:
         self.model_path = os.path.join(self.args.save_dir, self.args.env_name)
         if not os.path.exists(self.model_path):
             os.mkdir(self.model_path)
+            
+    def output_file_naming(self):
+        if self.args.updated_reward:
+            if self.args.use_dueling:
+                if self.args.medium_env:
+                    filename="duelingDQN_medium_updated_res.csv"
+                    pathfilename="duelingDQN_medium_updated_path.txt"  
+                elif self.args.hard_env:
+                    filename="duelingDQN_hard_updated_res.csv"
+                    pathfilename="duelingDQN_hard_updated_path.txt" 
+                else:
+                    filename="duelingDQN_eazy_updated_res.csv"
+                    pathfilename="duelingDQN_eazy_updated_path.txt" 
+                            
+            elif self.args.use_double_net:
+                if self.args.medium_env:
+                    filename="DDQN_medium_updated_res.csv"
+                    pathfilename="DDQN_medium_updated_path.txt"  
+                elif self.args.hard_env:
+                    filename="DDQN_hard_updated_res.csv"
+                    pathfilename="DDQN_hard_updated_path.txt" 
+                else:
+                    filename="DDQN_eazy_updated_res.csv"
+                    pathfilename="DDQN_eazy_updated_path.txt"
+            else:
+                if self.args.medium_env:
+                    filename="DQN_medium_updated_res.csv"
+                    pathfilename="DQN_medium_updated_path.txt"  
+                elif self.args.hard_env:
+                    filename="DQN_hard_updated_res.csv"
+                    pathfilename="DQN_hard_updated_path.txt" 
+                else:
+                    filename="DQN_eazy_updated_res.csv"
+                    pathfilename="DQN_eazy_updated_path.txt"
+        else:
+            if self.args.use_dueling:
+                if self.args.medium_env:
+                    filename="duelingDQN_medium_res.csv"
+                    pathfilename="duelingDQN_medium_path.txt"  
+                elif self.args.hard_env:
+                    filename="duelingDQN_hard_res.csv"
+                    pathfilename="duelingDQN_hard_path.txt" 
+                else:
+                    filename="duelingDQN_eazy_res.csv"
+                    pathfilename="duelingDQN_eazy_path.txt" 
+                            
+            elif self.args.use_double_net:
+                if self.args.medium_env:
+                    filename="DDQN_medium_res.csv"
+                    pathfilename="DDQN_medium_path.txt"  
+                elif self.args.hard_env:
+                    filename="DDQN_hard_res.csv"
+                    pathfilename="DDQN_hard_path.txt" 
+                else:
+                    filename="DDQN_eazy_res.csv"
+                    pathfilename="DDQN_eazy_path.txt"
+            else:
+                if self.args.medium_env:
+                    filename="DQN_medium_res.csv"
+                    pathfilename="DQN_medium_path.txt"  
+                elif self.args.hard_env:
+                    filename="DQN_hard_res.csv"
+                    pathfilename="DQN_hard_path.txt" 
+                else:
+                    filename="DQN_eazy_res.csv"
+                    pathfilename="DQN_eazy_path.txt"
+        return filename,pathfilename
+        
 
     # start to do the training
-    def learn(self):
-        if self.args.use_dueling:
-            if self.args.medium_env:
-                filename="duelingDQN_medium_res.csv"
-                pathfilename="duelingDQN_medium_path.txt"  
-            elif self.args.hard_env:
-                filename="duelingDQN_hard_res.csv"
-                pathfilename="duelingDQN_hard_path.txt" 
-            else:
-                filename="duelingDQN_eazy_res.csv"
-                pathfilename="duelingDQN_eazy_path.txt" 
-                        
-        elif self.args.use_double_net:
-            if self.args.medium_env:
-                filename="DDQN_medium_res.csv"
-                pathfilename="DDQN_medium_path.txt"  
-            elif self.args.hard_env:
-                filename="DDQN_hard_res.csv"
-                pathfilename="DDQN_hard_path.txt" 
-            else:
-                filename="DDQN_eazy_res.csv"
-                pathfilename="DDQN_eazy_path.txt"
-        else:
-            if self.args.medium_env:
-                filename="DQN_medium_res.csv"
-                pathfilename="DQN_medium_path.txt"  
-            elif self.args.hard_env:
-                filename="DQN_hard_res.csv"
-                pathfilename="DQN_hard_path.txt" 
-            else:
-                filename="DQN_eazy_res.csv"
-                pathfilename="DQN_eazy_path.txt"
-                
+    def learn(self):        
+        filename,pathfilename=self.output_file_naming()
         file, writer = setup_csv(filename)
         # the episode reward
         episode_reward = reward_recorder()

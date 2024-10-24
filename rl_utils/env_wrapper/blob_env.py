@@ -7,6 +7,7 @@ from gym import spaces
 import cv2
 import os
 from PIL import Image
+import math
 
 path_taken=[(1,1)]
 
@@ -66,6 +67,7 @@ class BlobEnv():
     MOVE_PENALTY = 0.05
     ENEMY_PENALTY = 0.75
     FOOD_REWARD = 10
+    SAME_STATE=0.65
     OBSERVATION_SPACE_VALUES = (SIZE, SIZE, 3)
     ACTION_SPACE_SIZE = 9
     PLAYER_N = 1
@@ -137,8 +139,39 @@ class BlobEnv():
                 (3, 2), (4, 1), (6, 5), (7, 5),
                 (7, 4), (7, 6)
             ]
+    
+    def calculate_angle(self,prev_state, new_state):
+        goal_state=(7,8)
+        # Convert points to NumPy arrays
+        prev_state = np.array(prev_state)
+        ray1 = np.array(new_state) - prev_state
+        ray2 = np.array(goal_state) - prev_state
+        
+        # Calculate dot product and magnitudes
+        dot_product = np.dot(ray1, ray2)
+        magnitude_ray1 = np.linalg.norm(ray1)
+        magnitude_ray2 = np.linalg.norm(ray2)
+        moved=True
 
+        if magnitude_ray1 == 0 :
+          moved=False
+        
+        if moved:
+          # Calculate cosine of the angle
+          cos_theta = dot_product / (magnitude_ray1 * magnitude_ray2)
 
+          # Handle potential floating-point errors
+          cos_theta = np.clip(cos_theta, -1.0, 1.0)
+          
+          # Calculate the angle in radians and convert to degrees
+          angle_radians = np.arccos(cos_theta)
+          angle_degrees = np.degrees(angle_radians)
+        else:
+          angle_degrees=180
+
+        return angle_degrees,moved    
+
+    
     def step(self, action):
         global path_taken
         self.episode_step += 1
@@ -150,13 +183,46 @@ class BlobEnv():
         else:
             new_observation = (self.player - self.food) + (self.player - self.enemies[0])
 
-        if self.player == self.food:
-            reward = self.FOOD_REWARD
-        elif self.player in self.enemies:
-            reward = -self.ENEMY_PENALTY - self.MOVE_PENALTY
-            self.player.x, self.player.y = x_t, y_t
-        else:
-            reward = -self.MOVE_PENALTY
+
+        if self.args.updated_reward:
+            dist1=math.dist([x_t,y_t], [7,8])
+            dist2=math.dist([self.player.x,self.player.y],[7,8])
+            d_reward=(dist2)/(10.63)
+            
+            if self.player == self.food:
+                reward = self.FOOD_REWARD
+            elif self.player in self.enemies:
+                reward = -self.ENEMY_PENALTY - self.MOVE_PENALTY
+                self.player.x, self.player.y = x_t, y_t
+            else:
+                reward = -self.MOVE_PENALTY
+                angle,moved=self.calculate_angle((x_t,y_t),(self.player.x,self.player.y))
+                
+                if moved:
+                    o_reward=abs((90-angle)/90)
+                    if angle>90:
+                        reward-=o_reward*0.3
+                    else:
+                        reward-=o_reward*0.1
+                else:
+                    reward-=self.SAME_STATE
+                
+                if dist1>dist2 :
+                    d_reward=d_reward*(-0.05)
+                    reward+=d_reward
+                elif dist1<dist2:
+                    d_reward=d_reward*(-0.2)
+                    reward+=d_reward  
+        else:        
+            if self.player == self.food:
+                reward = self.FOOD_REWARD
+            elif self.player in self.enemies:
+                reward = -self.ENEMY_PENALTY - self.MOVE_PENALTY
+                self.player.x, self.player.y = x_t, y_t
+            else:
+                reward = -self.MOVE_PENALTY      
+
+            
 
         self.total_reward += reward
 

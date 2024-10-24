@@ -25,6 +25,7 @@ def get_args():
     parse.add_argument('--use-dueling', action='store_true', help='use dueling to train the agent')
     parse.add_argument('--hard-env', action='store_true', help='use hard env to train the agent')
     parse.add_argument('--medium-env', action='store_true', help='use medium env to train the agent')
+    parse.add_argument('--updated-reward',action='store_true',help='use better reward function')
 
     args = parse.parse_args()
 
